@@ -1,15 +1,25 @@
-import express from 'express'
+import express from 'express';
 
-// importing user routes 
+// Importing user routes
 import userRoutes from './routes/user.js';
+import { connectDB } from './utils/features.js';
 
-const app  = express();
+const port = 5000;
 
-const port = 4000;
+// Connect DB
+connectDB();
 
-app.get('/api/v1/user', userRoutes);
+const app = express();
 
-app.listen(port, ()=>{
-    console.log(`Server is running on http://localhost:${port}`);
-    
+app.use(express.json());
+
+app.get('/', (req, res) => {
+  console.log("Root route accessed");
+  res.send("API working with /api/v1");
+});
+
+app.use('/api/v1/user', userRoutes);
+
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
 });
