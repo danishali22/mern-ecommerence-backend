@@ -6,3 +6,8 @@ export const connectDB = () => {
         .then(() => console.log("DB connected successfully")) // Log success
         .catch((error) => console.log(`DB connection error: ${error.message}`)); // Log error
 };
+/*
+sudo chown -R mongodb:mongodb /var/lib/mongodb
+sudo chown mongodb:mongodb /tmp/mongodb-27017.sock
+sudo service mongod restart
+*/

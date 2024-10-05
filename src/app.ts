@@ -1,10 +1,11 @@
 import express from 'express';
+import { connectDB } from './utils/features.js';
+import { errorMiddleware } from './middlewares/error.js';
 
 // Importing user routes
 import userRoutes from './routes/user.js';
-import { connectDB } from './utils/features.js';
 
-const port = 5000;
+const port = 4000;
 
 // Connect DB
 connectDB();
@@ -19,6 +20,8 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/v1/user', userRoutes);
+
+app.use(errorMiddleware);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
