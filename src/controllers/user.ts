@@ -14,14 +14,15 @@ export const newUser = TryCatch(
 
     let user = await User.findById(_id);
     if (user) {
-      res.send(200).json({
+      return res.status(200).json({
         suceess: true,
-        message: `Welcome ${user.name}`,
+        message: `Welcome again ${user.name}`,
+        data: user,
       });
     }
 
-    if (!_id && !name && !email && photo && !gender && dob)
-      next(new ErrorHandler("Please add all fields", 400));
+    if (!_id || !name || !email || !photo || !gender || !dob)
+      return next(new ErrorHandler("Please add all fields", 400));
 
     user = await User.create({
       _id,
@@ -32,7 +33,7 @@ export const newUser = TryCatch(
       dob,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: `Welcome, ${user.name}`,
     });
@@ -50,18 +51,19 @@ export const getAllUsers = TryCatch(async (req, res, next) => {
 
 export const getUser = TryCatch(async (req, res, next) => {
   const id = req.params.id;
-  const user = User.findById(id);
-  if (!user) next(new ErrorHandler("invalid Id", 400));
-  res.send(200).json({
+  const user = await User.findById(id);
+  if (!user) return next(new ErrorHandler("invalid Id", 400));
+  res.status(200).json({
     status: true,
     data: user,
+    message: "User find successfully",
   });
 });
 
 export const deleteUser = TryCatch(async (req, res, next) => {
   const id = req.params.id;
   const user = User.findById(id);
-  if (!user) next(new ErrorHandler("Invalid Id", 400));
+  if (!user) return next(new ErrorHandler("Invalid Id", 400));
 
   await user.deleteOne();
 

@@ -4,6 +4,7 @@ import { errorMiddleware } from './middlewares/error.js';
 
 // Importing user routes
 import userRoutes from './routes/user.js';
+import productRoutes from './routes/product.js';
 
 const port = 4000;
 
@@ -20,6 +21,10 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/product', productRoutes);
+
+// to access images via upload folder
+app.use("/uploads", express.static("uploads"));
 
 app.use(errorMiddleware);
 

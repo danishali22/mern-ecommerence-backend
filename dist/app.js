@@ -3,6 +3,7 @@ import { connectDB } from './utils/features.js';
 import { errorMiddleware } from './middlewares/error.js';
 // Importing user routes
 import userRoutes from './routes/user.js';
+import productRoutes from './routes/product.js';
 const port = 4000;
 // Connect DB
 connectDB();
@@ -13,6 +14,9 @@ app.get('/', (req, res) => {
     res.send("API working with /api/v1");
 });
 app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/product', productRoutes);
+// to access images via upload folder
+app.use("/uploads", express.static("uploads"));
 app.use(errorMiddleware);
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
