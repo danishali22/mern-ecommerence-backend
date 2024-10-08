@@ -4,11 +4,20 @@ import { errorMiddleware } from './middlewares/error.js';
 // Importing user routes
 import userRoutes from './routes/user.js';
 import productRoutes from './routes/product.js';
-const port = 4000;
+import NodeCache from 'node-cache';
+import morgan from 'morgan';
+import { config } from 'dotenv';
+config({
+    path: "./.env",
+});
+const port = process.env.PORT || 4000;
+const mongoURI = process.env.MONGO_URI || "";
 // Connect DB
-connectDB();
+connectDB(mongoURI);
+export const myCache = new NodeCache();
 const app = express();
 app.use(express.json());
+app.use(morgan("dev"));
 app.get('/', (req, res) => {
     console.log("Root route accessed");
     res.send("API working with /api/v1");
