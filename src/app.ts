@@ -1,13 +1,14 @@
 import express from 'express';
 import { connectDB } from './utils/features.js';
 import { errorMiddleware } from './middlewares/error.js';
+import NodeCache from 'node-cache';
+import morgan from 'morgan';
+import { config } from 'dotenv';
 
 // Importing user routes
 import userRoutes from './routes/user.js';
 import productRoutes from './routes/product.js';
-import NodeCache from 'node-cache';
-import morgan from 'morgan';
-import { config } from 'dotenv';
+import orderRoutes from './routes/order.js';
 
 config({
   path: "./.env",
@@ -32,6 +33,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/product', productRoutes);
+app.use('/api/v1/order', orderRoutes);
 
 // to access images via upload folder
 app.use("/uploads", express.static("uploads"));
