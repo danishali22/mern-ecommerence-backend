@@ -7,7 +7,7 @@ import ErrorHandler from "../utils/utitlity-class.js";
 
 export const myOrders = TryCatch(async (req, res, next) => {
   const user = req.query.user;
-  const key = `my-order-${user}`;
+  const key = `my-orders-${user}`;
 
   const orders = await cacheData(key, async () => {
     return await Order.find({ user });
@@ -84,7 +84,12 @@ export const newOrder = TryCatch(
 
     await reduceStock(orderItems);
 
-    await invalidateCache({ product: true, order: true, admin: true });
+    await invalidateCache({
+      product: true,
+      order: true,
+      admin: true,
+      productId: newOrder.orderItems.map((i) => String(i.productId)),
+    });
 
     return res.status(201).json({
       success: true,
@@ -95,43 +100,54 @@ export const newOrder = TryCatch(
 );
 
 export const processOrder = TryCatch(async (req, res, next) => {
-
   const id = req.params.id;
 
   const order = await Order.findById(id);
-  if(!order) return next(new ErrorHandler("Order not found!", 404));
+  if (!order) return next(new ErrorHandler("Order not found!", 404));
 
   switch (order.status) {
     case "Processing":
-      order.status = "Shipped"
+      order.status = "Shipped";
       break;
     case "Shipped":
-      order.status = "Delivered"
+      order.status = "Delivered";
     default:
-      order.status = "Delivered"
+      order.status = "Delivered";
       break;
   }
 
   await order.save();
 
-  await invalidateCache({ product: false, order: true, admin: true });
+  await invalidateCache({
+    product: false,
+    order: true,
+    admin: true,
+    orderId: String(order._id),
+    userId: order.user,
+  });
 
   return res.status(200).json({
     success: true,
+    data: order.status,
     message: "Order status updated successfully!",
   });
 });
 
 export const deleteOrder = TryCatch(async (req, res, next) => {
-
   const id = req.params.id;
 
   const order = await Order.findById(id);
-  if(!order) return next(new ErrorHandler("Order not found!", 404));
+  if (!order) return next(new ErrorHandler("Order not found!", 404));
 
   await order.deleteOne();
 
-  await invalidateCache({ product: false, order: true, admin: true });
+  await invalidateCache({
+    product: false,
+    order: true,
+    admin: true,
+    orderId: String(order._id),
+    userId: order.user,
+  });
 
   return res.status(200).json({
     success: true,

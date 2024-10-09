@@ -4,7 +4,7 @@ import { cacheData, invalidateCache, reduceStock } from "../utils/features.js";
 import ErrorHandler from "../utils/utitlity-class.js";
 export const myOrders = TryCatch(async (req, res, next) => {
     const user = req.query.user;
-    const key = `my-order-${user}`;
+    const key = `my-orders-${user}`;
     const orders = await cacheData(key, async () => {
         return await Order.find({ user });
     });
@@ -57,7 +57,12 @@ export const newOrder = TryCatch(async (req, res, next) => {
         total,
     });
     await reduceStock(orderItems);
-    await invalidateCache({ product: true, order: true, admin: true });
+    await invalidateCache({
+        product: true,
+        order: true,
+        admin: true,
+        productId: newOrder.orderItems.map((i) => String(i.productId)),
+    });
     return res.status(201).json({
         success: true,
         message: "Order placed successfully!",
@@ -80,9 +85,16 @@ export const processOrder = TryCatch(async (req, res, next) => {
             break;
     }
     await order.save();
-    await invalidateCache({ product: false, order: true, admin: true });
+    await invalidateCache({
+        product: false,
+        order: true,
+        admin: true,
+        orderId: String(order._id),
+        userId: order.user,
+    });
     return res.status(200).json({
         success: true,
+        data: order.status,
         message: "Order status updated successfully!",
     });
 });
@@ -92,7 +104,13 @@ export const deleteOrder = TryCatch(async (req, res, next) => {
     if (!order)
         return next(new ErrorHandler("Order not found!", 404));
     await order.deleteOne();
-    await invalidateCache({ product: false, order: true, admin: true });
+    await invalidateCache({
+        product: false,
+        order: true,
+        admin: true,
+        orderId: String(order._id),
+        userId: order.user,
+    });
     return res.status(200).json({
         success: true,
         message: "Order deleted successfully!",
