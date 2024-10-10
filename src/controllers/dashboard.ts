@@ -120,11 +120,12 @@ export const getDashboardStats = TryCatch (
                 )
             };
 
+            // Calculate all orders revenue
             const revenue = allOrders.reduce(
                 (total, order) => total + ((order.toObject().total || 0) as number), 
                 0
             );
-            
+            // Calculate count
             const count = {
                 revenue,
                 product: productsCount,

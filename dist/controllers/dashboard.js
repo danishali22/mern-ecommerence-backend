@@ -81,7 +81,9 @@ export const getDashboardStats = TryCatch(async (req, res, next) => {
             user: calculatePercentage(thisMonthUsers.length, lastMonthUsers.length),
             order: calculatePercentage(thisMonthOrders.length, lastMonthOrders.length)
         };
+        // Calculate all orders revenue
         const revenue = allOrders.reduce((total, order) => total + (order.toObject().total || 0), 0);
+        // Calculate count
         const count = {
             revenue,
             product: productsCount,
