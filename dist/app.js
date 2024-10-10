@@ -9,6 +9,7 @@ import userRoutes from './routes/user.js';
 import productRoutes from './routes/product.js';
 import orderRoutes from './routes/order.js';
 import paymentRoutes from './routes/payment.js';
+import dashboardRoutes from './routes/dashboard.js';
 config({
     path: "./.env",
 });
@@ -28,6 +29,7 @@ app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/product', productRoutes);
 app.use('/api/v1/order', orderRoutes);
 app.use('/api/v1/payment', paymentRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 // to access images via upload folder
 app.use("/uploads", express.static("uploads"));
 app.use(errorMiddleware);

@@ -55,6 +55,12 @@ export const reduceStock = async (orderItems) => {
         await product.save();
     }
 };
+export const calculatePercentage = (thisMonth, lastMonth) => {
+    if (lastMonth === 0)
+        return thisMonth * 100;
+    const percent = ((thisMonth - lastMonth) / lastMonth) * 100;
+    return Number(percent.toFixed(0));
+};
 /*
 sudo chown -R mongodb:mongodb /var/lib/mongodb
 sudo chown mongodb:mongodb /tmp/mongodb-27017.sock
