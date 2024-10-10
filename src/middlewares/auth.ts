@@ -13,7 +13,7 @@ export const adminOnly = TryCatch (
             return next(new ErrorHandler("No User Found", 401));
 
         if(user.role !== "admin")
-            return next(new ErrorHandler("Your are not allowed to access these resource", 401));
+            return next(new ErrorHandler("Your are not allowed to access these resource", 403));
 
         next();
     }
