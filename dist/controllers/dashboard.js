@@ -68,8 +68,9 @@ export const getDashboardStats = TryCatch(async (req, res, next) => {
                 $lte: today,
             },
         });
+        const latestTransactionsPromise = Order.find({}).select(["_id", "orderItems", "discount", "total", "status"]).limit(4);
         // Await all promises in parallel
-        const [thisMonthProducts, lastMonthProducts, thisMonthUsers, lastMonthUsers, thisMonthOrders, lastMonthOrders, productsCount, usersCount, allOrders, lastSixMonthOrders, categories,] = await Promise.all([
+        const [thisMonthProducts, lastMonthProducts, thisMonthUsers, lastMonthUsers, thisMonthOrders, lastMonthOrders, productsCount, usersCount, allOrders, lastSixMonthOrders, categories, femaleUsersCount, latestTransactions,] = await Promise.all([
             thisMonthProductsPromise,
             lastMonthProductsPromise,
             thisMonthUsersPromise,
@@ -81,6 +82,8 @@ export const getDashboardStats = TryCatch(async (req, res, next) => {
             Order.find({}).select("total"),
             lastSixMonthOrdersPromise,
             Product.distinct("category"),
+            User.countDocuments({ gender: "female" }),
+            latestTransactionsPromise,
         ]);
         // Calculate this and last month revenue
         const thisMonthRevenue = thisMonthOrders.reduce((total, order) => total + (order.toObject().total || 0), 0);
@@ -121,12 +124,27 @@ export const getDashboardStats = TryCatch(async (req, res, next) => {
                 [category]: Math.round((categoriesCount[i] / productsCount) * 100),
             });
         });
+        // Users count
+        const userRatio = {
+            male: usersCount - femaleUsersCount,
+            female: femaleUsersCount,
+        };
+        // Latest Transactions
+        const modifyLatestTransactions = latestTransactions.map((i) => ({
+            _id: i._id,
+            discount: i.discount,
+            total: i.total,
+            status: i.status,
+            quantity: i.orderItems.quantity,
+        }));
         // Store calculated stats in the `stats` variable
         stats = {
             categoryCount,
             changePercent,
             count,
             chart: { order: orderMonthlyCount, revenue: orderMonthlyRevenue },
+            userRatio,
+            latestTransactions: modifyLatestTransactions,
         };
         // Cache the calculated stats for future requests
         myCache.set(key, JSON.stringify(stats));
