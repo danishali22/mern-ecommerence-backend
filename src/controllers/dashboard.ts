@@ -89,6 +89,7 @@ export const getDashboardStats = TryCatch(async (req, res, next) => {
       usersCount,
       allOrders,
       lastSixMonthOrders,
+      categories,
     ] = await Promise.all([
       thisMonthProductsPromise,
       lastMonthProductsPromise,
@@ -100,6 +101,7 @@ export const getDashboardStats = TryCatch(async (req, res, next) => {
       User.countDocuments(),
       Order.find({}).select("total"),
       lastSixMonthOrdersPromise,
+      Product.distinct("category"),
     ]);
 
     // Calculate this and last month revenue
@@ -139,6 +141,7 @@ export const getDashboardStats = TryCatch(async (req, res, next) => {
       order: allOrders.length,
     };
 
+    // Last 6 Months Orders count and revenue
     const orderMonthlyCount = new Array(6).fill(0);
     const orderMonthlyRevenue = new Array(6).fill(0);
 
@@ -152,8 +155,24 @@ export const getDashboardStats = TryCatch(async (req, res, next) => {
       }
     });
 
+    // Fetch Category and its count in stock
+    const categoriesCountPromise = categories.map((category) => 
+      Product.countDocuments({ category })
+    );
+
+    const categoriesCount = await Promise.all(categoriesCountPromise);
+
+    const categoryCount: Record<string, number>[] = [];
+
+    categories.forEach((category, i) => {
+      categoryCount.push({
+        [category]: Math.round((categoriesCount[i] / productsCount) * 100),
+      });
+    });
+
     // Store calculated stats in the `stats` variable
     stats = {
+      categoryCount,
       changePercent,
       count,
       chart: { order: orderMonthlyCount, revenue: orderMonthlyRevenue },
