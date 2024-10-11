@@ -90,6 +90,7 @@ export const getDashboardStats = TryCatch(async (req, res, next) => {
       allOrders,
       lastSixMonthOrders,
       categories,
+      femaleUsersCount,
     ] = await Promise.all([
       thisMonthProductsPromise,
       lastMonthProductsPromise,
@@ -102,6 +103,7 @@ export const getDashboardStats = TryCatch(async (req, res, next) => {
       Order.find({}).select("total"),
       lastSixMonthOrdersPromise,
       Product.distinct("category"),
+      User.countDocuments({gender: "female"}),
     ]);
 
     // Calculate this and last month revenue
@@ -170,12 +172,19 @@ export const getDashboardStats = TryCatch(async (req, res, next) => {
       });
     });
 
+    // Users count
+    const userRatio = {
+        male: usersCount - femaleUsersCount,
+        female: femaleUsersCount,
+    };
+
     // Store calculated stats in the `stats` variable
     stats = {
       categoryCount,
       changePercent,
       count,
       chart: { order: orderMonthlyCount, revenue: orderMonthlyRevenue },
+      userRatio,
     };
 
     // Cache the calculated stats for future requests
