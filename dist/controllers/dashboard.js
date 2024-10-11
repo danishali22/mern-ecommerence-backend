@@ -111,7 +111,7 @@ export const getDashboardStats = TryCatch(async (req, res, next) => {
         const orderMonthlyRevenue = new Array(6).fill(0);
         lastSixMonthOrders.forEach((order) => {
             const orderCreation = order.toObject().createdAt;
-            const monthDiff = today.getMonth() - orderCreation.getMonth();
+            const monthDiff = (today.getMonth() - orderCreation.getMonth() + 12) % 12;
             if (monthDiff < 6) {
                 orderMonthlyCount[6 - monthDiff - 1] += 1;
                 orderMonthlyRevenue[6 - monthDiff - 1] += order.total;
