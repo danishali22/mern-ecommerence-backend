@@ -11,15 +11,20 @@ import productRoutes from './routes/product.js';
 import orderRoutes from './routes/order.js';
 import paymentRoutes from './routes/payment.js';
 import dashboardRoutes from './routes/dashboard.js';
+import Stripe from 'stripe';
+import cors from 'cors';
 
 config({
   path: "./.env",
 })
 const port = process.env.PORT || 4000;
 const mongoURI = process.env.MONGO_URI || "";
+const stripeKey = process.env.STRIPE_KEY || "";
 
 // Connect DB
 connectDB(mongoURI);
+
+export const stripe = new Stripe(stripeKey);
 
 export const myCache = new NodeCache();
 
@@ -27,6 +32,7 @@ const app = express();
 
 app.use(express.json());
 app.use(morgan("dev"));
+app.use(cors());
 
 app.get('/', (req, res) => {
   console.log("Root route accessed");
