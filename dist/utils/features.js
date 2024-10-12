@@ -2,7 +2,9 @@ import mongoose from "mongoose";
 import { Product } from "../models/product.js";
 import { myCache } from "../app.js";
 export const connectDB = (mongoURI) => {
-    mongoose.connect(mongoURI, {
+    mongoose
+        .connect(mongoURI, {
+        // Corrected connection string 127.0.0.1:27017
         dbName: "ecommerence",
     })
         .then(() => console.log("DB connected successfully")) // Log success
@@ -18,7 +20,7 @@ export const cacheData = async (cacheKey, fetchFunction) => {
         return data;
     }
 };
-export const invalidateCache = async ({ product, order, admin, userId, orderId, productId }) => {
+export const invalidateCache = async ({ product, order, admin, userId, orderId, productId, }) => {
     if (product) {
         const productKeys = [
             "latest-products",
@@ -28,7 +30,7 @@ export const invalidateCache = async ({ product, order, admin, userId, orderId, 
         if (typeof productId === "string")
             productKeys.push(`product-${productId}`);
         if (typeof productId === "object")
-            productId.forEach(i => {
+            productId.forEach((i) => {
                 productKeys.push(`product-${i}`);
             });
         myCache.del(productKeys);
@@ -45,7 +47,7 @@ export const invalidateCache = async ({ product, order, admin, userId, orderId, 
     }
 };
 export const reduceStock = async (orderItems) => {
-    // console.log("Order Items:", JSON.stringify(orderItems, null, 2)); 
+    // console.log("Order Items:", JSON.stringify(orderItems, null, 2));
     for (let i = 0; i < orderItems.length; i++) {
         const order = orderItems[i];
         const product = await Product.findById(order.productId);
@@ -61,7 +63,7 @@ export const calculatePercentage = (thisMonth, lastMonth) => {
     const percent = (thisMonth / lastMonth) * 100;
     return Number(percent.toFixed(0));
 };
-export const getInventories = async ({ categories, productsCount }) => {
+export const getInventories = async ({ categories, productsCount, }) => {
     const categoriesCountPromise = categories.map((category) => Product.countDocuments({ category }));
     const categoriesCount = await Promise.all(categoriesCountPromise);
     const categoryCount = [];
@@ -72,14 +74,18 @@ export const getInventories = async ({ categories, productsCount }) => {
     });
     return categoryCount;
 };
-;
-export const getCharData = ({ length, today, docArr }) => {
+export const getChartData = ({ length, today, docArr, property, }) => {
     const data = new Array(length).fill(0);
     docArr.forEach((i) => {
         const orderCreation = i.createdAt;
         const monthDiff = (today.getMonth() - orderCreation.getMonth() + 12) % 12;
         if (monthDiff < length) {
-            data[length - monthDiff - 1] += 1;
+            if (property) {
+                data[length - monthDiff - 1] += i[property];
+            }
+            else {
+                data[length - monthDiff - 1] += 1;
+            }
         }
     });
     return data;
