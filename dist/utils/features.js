@@ -72,6 +72,18 @@ export const getInventories = async ({ categories, productsCount }) => {
     });
     return categoryCount;
 };
+;
+export const getCharData = ({ length, today, docArr }) => {
+    const data = new Array(length).fill(0);
+    docArr.forEach((i) => {
+        const orderCreation = i.createdAt;
+        const monthDiff = (today.getMonth() - orderCreation.getMonth() + 12) % 12;
+        if (monthDiff < length) {
+            data[length - monthDiff - 1] += 1;
+        }
+    });
+    return data;
+};
 /*
 sudo chown -R mongodb:mongodb /var/lib/mongodb
 sudo chown mongodb:mongodb /tmp/mongodb-27017.sock

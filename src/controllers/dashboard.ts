@@ -3,7 +3,7 @@ import { TryCatch } from "../middlewares/error.js";
 import { Order } from "../models/order.js";
 import { Product } from "../models/product.js";
 import { User } from "../models/user.js";
-import { calculatePercentage, getInventories } from "../utils/features.js";
+import { calculatePercentage, getCharData, getInventories } from "../utils/features.js";
 
 export const getDashboardStats = TryCatch(async (req, res, next) => {
   const key = "admin-stats";
@@ -240,8 +240,8 @@ export const getPieCharts = TryCatch(async (req, res, next) => {
       Product.countDocuments({ stock: 0 }),
       allOrdersPromise,
       User.find({}).select(["dob"]),
-      User.countDocuments({role: "admin"}),
-      User.countDocuments({role: "user"}),
+      User.countDocuments({ role: "admin" }),
+      User.countDocuments({ role: "user" }),
     ]);
 
     // Processing, Shipped and Devlivered order count
@@ -281,10 +281,10 @@ export const getPieCharts = TryCatch(async (req, res, next) => {
 
     const burnt = allOrders.reduce((prev, order) => prev + (order.tax || 0), 0);
 
-    const marketingCost = Math.round((grossIncome * (30 / 100)));
+    const marketingCost = Math.round(grossIncome * (30 / 100));
 
-    const netMargin = grossIncome - discount - productionCost - burnt - marketingCost;
-
+    const netMargin =
+      grossIncome - discount - productionCost - burnt - marketingCost;
 
     const revenueDistribution = {
       netMargin,
@@ -296,15 +296,16 @@ export const getPieCharts = TryCatch(async (req, res, next) => {
 
     // Count users based on age:- teen, adult, old
     const usersAgeGroup = {
-        teen: allUsers.filter((i) => Number(i.age) < 20).length,
-        adult: allUsers.filter((i) => Number(i.age) >= 20 && Number(i.age) < 40).length,
-        old: allUsers.filter((i) => Number(i.age) >= 40).length,
-    }
+      teen: allUsers.filter((i) => Number(i.age) < 20).length,
+      adult: allUsers.filter((i) => Number(i.age) >= 20 && Number(i.age) < 40)
+        .length,
+      old: allUsers.filter((i) => Number(i.age) >= 40).length,
+    };
 
     // Count users based on role:- admin, customer
     const adminCustomer = {
-        admin: adminUsers,
-        customer: customerUsers,
+      admin: adminUsers,
+      customer: customerUsers,
     };
 
     charts = {
@@ -325,6 +326,67 @@ export const getPieCharts = TryCatch(async (req, res, next) => {
   });
 });
 
-export const getBarCharts = TryCatch(async (req, res, next) => {});
+export const getBarCharts = TryCatch(async (req, res, next) => {
+  let charts = {};
+  const key = "admin-bar-chart";
+  if (myCache.has(key)) {
+    charts = JSON.parse(myCache.get(key)!);
+  } else {
+    const today = new Date();
+
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    const twelweMonthsAgo = new Date();
+    twelweMonthsAgo.setMonth(twelweMonthsAgo.getMonth() - 6);
+
+    const sixMonthsProductsPromise = Product.find({
+      createdAt: {
+        $gte: sixMonthsAgo,
+        $lte: today,
+      },
+    }).select("createdAt");
+
+    const sixMonthsUsersPromise = User.find({
+      createdAt: {
+        $gte: sixMonthsAgo,
+        $lte: today,
+      },
+    }).select("createdAt");
+
+    const twelweMonthsOrdersPromise = Order.find({
+      createdAt: {
+        $gte: twelweMonthsAgo,
+        $lte: today,
+      },
+    }).select("createdAt");
+
+    const [sixMonthsProducts, sixMonthsUsers, twelweMonthsOrders] =
+      await Promise.all([
+        sixMonthsProductsPromise,
+        sixMonthsUsersPromise,
+        twelweMonthsOrdersPromise,
+      ]);
+      
+    const products = getCharData({length: 6, today, docArr: sixMonthsProducts});
+    const users = getCharData({length: 6, today, docArr: sixMonthsUsers});
+    const orders = getCharData({length: 12, today, docArr: twelweMonthsOrders});
+
+    charts = {
+      products,
+      users,
+      orders,
+    };
+
+    myCache.set(key, JSON.stringify(charts));
+  }
+
+  return res.status(200).json({
+    success: true,
+    data: charts,
+
+  });
+
+});
 
 export const getLineCharts = TryCatch(async (req, res, next) => {});

@@ -87,6 +87,30 @@ export const getInventories = async ({categories, productsCount}: {categories: s
     return categoryCount;
 }
 
+interface MyDocument {
+    createdAt: Date;
+};
+
+type CharDataProps = {
+    length: number;
+    today: Date;
+    docArr: MyDocument[]
+};
+
+export const getCharData = ({length, today, docArr}: CharDataProps) => {
+    const data: number[] = new Array(length).fill(0);
+
+    docArr.forEach((i) => {
+      const orderCreation = i.createdAt;
+      const monthDiff = (today.getMonth() - orderCreation.getMonth() + 12) % 12;
+
+      if (monthDiff < length) {
+        data[length - monthDiff - 1] += 1;
+      }
+    });
+    return data;
+}
+
 
 /*
 sudo chown -R mongodb:mongodb /var/lib/mongodb
