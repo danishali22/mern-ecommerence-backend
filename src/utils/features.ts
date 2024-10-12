@@ -27,7 +27,7 @@ export const cacheData = async <T>(
   }
 };
 
-export const invalidateCache = async ({
+export const invalidateCache = ({
   product,
   order,
   admin,
@@ -59,6 +59,13 @@ export const invalidateCache = async ({
     myCache.del(orderKeys);
   }
   if (admin) {
+    const adminKeys: string[] = [
+        "admin-stats",
+        "admin-pie-chart",
+        "admin-bar-chart",
+        "admin-line-chart",
+    ];
+    myCache.del(adminKeys);
   }
 };
 

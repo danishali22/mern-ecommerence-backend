@@ -20,7 +20,7 @@ export const cacheData = async (cacheKey, fetchFunction) => {
         return data;
     }
 };
-export const invalidateCache = async ({ product, order, admin, userId, orderId, productId, }) => {
+export const invalidateCache = ({ product, order, admin, userId, orderId, productId, }) => {
     if (product) {
         const productKeys = [
             "latest-products",
@@ -44,6 +44,13 @@ export const invalidateCache = async ({ product, order, admin, userId, orderId, 
         myCache.del(orderKeys);
     }
     if (admin) {
+        const adminKeys = [
+            "admin-stats",
+            "admin-pie-chart",
+            "admin-bar-chart",
+            "admin-line-chart",
+        ];
+        myCache.del(adminKeys);
     }
 };
 export const reduceStock = async (orderItems) => {
