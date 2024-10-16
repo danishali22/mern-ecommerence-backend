@@ -7,7 +7,7 @@ app.post("/new", adminOnly, singleUpload, newProduct);
 app.get("/latest", singleUpload, latestProducts);
 app.get("/categories", singleUpload, getAllCategories);
 app.get("/admin-products", adminOnly, singleUpload, getAdminProducts);
-app.get("/search", adminOnly, singleUpload, searchFilterProducts);
+app.get("/search", singleUpload, searchFilterProducts);
 app.get("/:id", getProduct);
 app.put("/:id", adminOnly, updateProduct);
 app.delete("/:id", adminOnly, deleteProduct);
