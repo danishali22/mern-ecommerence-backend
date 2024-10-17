@@ -140,6 +140,7 @@ export const updateProduct = TryCatch(async (req, res, next) => {
   if (stock) product.stock = stock;
 
   const updatedProduct = await product.save();
+  
 
   invalidateCache({
     product: true,
