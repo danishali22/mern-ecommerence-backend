@@ -147,7 +147,7 @@ export const updateProduct = TryCatch(async (req, res, next) => {
     admin: true,
   });
 
-  return res.status(201).json({
+  return res.status(200).json({
     success: true,
     data: updatedProduct,
     message: "Product updated successfully",
