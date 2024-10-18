@@ -14,12 +14,13 @@ import { cacheData, invalidateCache } from "../utils/features.js";
 
 export const latestProducts = TryCatch(async (req, res, next) => {
   let products;
+  const key = "latest-products";
 
-  if (myCache.has("latest-products")) {
-    products = JSON.parse(myCache.get("latest-products")!);
+  if (myCache.has(key)) {
+    products = JSON.parse(myCache.get(key)!);
   } else {
     products = await Product.find({}).sort({ created_at: -1 }).limit(5);
-    myCache.set("latest-products", JSON.stringify(products));
+    myCache.set(key, JSON.stringify(products));
   }
 
   return res.status(200).json({
