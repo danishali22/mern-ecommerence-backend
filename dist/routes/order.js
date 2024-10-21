@@ -6,6 +6,6 @@ app.post("/new", newOrder);
 app.get("/my", myOrders);
 app.get("/all", adminOnly, allOrders);
 app.get("/:id", getOrder);
-app.put("/:id", processOrder);
-app.delete("/:id", deleteOrder);
+app.put("/:id", adminOnly, processOrder);
+app.delete("/:id", adminOnly, deleteOrder);
 export default app;
