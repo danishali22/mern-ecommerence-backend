@@ -73,7 +73,7 @@ export const newProduct = TryCatch(async (req, res, next) => {
     const photo = req.file;
     if (!photo)
         return next(new ErrorHandler("Please add Product photo", 400));
-    if (!name || !category || !price || !stock) {
+    if (!name || !category || !price || stock > 0 || !photo) {
         rm(photo.path, () => {
             console.log("Photo Deleted");
         });

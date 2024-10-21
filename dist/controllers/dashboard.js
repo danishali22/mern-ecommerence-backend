@@ -181,7 +181,7 @@ export const getPieCharts = TryCatch(async (req, res, next) => {
         ]);
         // Processing, Shipped and Devlivered order count
         const orderFullfillment = {
-            process,
+            processing,
             shipped,
             delivered,
         };
