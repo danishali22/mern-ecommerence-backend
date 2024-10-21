@@ -167,7 +167,7 @@ export const getPieCharts = TryCatch(async (req, res, next) => {
             "discount",
             "total",
         ]);
-        const [ProcessingOrders, ShippedOrders, DeliveredOrders, categories, productsCount, outStock, allOrders, allUsers, adminUsers, customerUsers,] = await Promise.all([
+        const [processing, shipped, delivered, categories, productsCount, outStock, allOrders, allUsers, adminUsers, customerUsers,] = await Promise.all([
             Order.countDocuments({ status: "Processing" }),
             Order.countDocuments({ status: "Shipped" }),
             Order.countDocuments({ status: "Delivered" }),
@@ -181,9 +181,9 @@ export const getPieCharts = TryCatch(async (req, res, next) => {
         ]);
         // Processing, Shipped and Devlivered order count
         const orderFullfillment = {
-            ProcessingOrders,
-            ShippedOrders,
-            DeliveredOrders,
+            process,
+            shipped,
+            delivered,
         };
         // Product Categories name and count
         const productCategories = await getInventories({

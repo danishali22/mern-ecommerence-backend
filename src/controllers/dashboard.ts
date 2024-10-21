@@ -225,9 +225,9 @@ export const getPieCharts = TryCatch(async (req, res, next) => {
     ]);
 
     const [
-      ProcessingOrders,
-      ShippedOrders,
-      DeliveredOrders,
+      processing,
+      shipped,
+      delivered,
       categories,
       productsCount,
       outStock,
@@ -250,9 +250,9 @@ export const getPieCharts = TryCatch(async (req, res, next) => {
 
     // Processing, Shipped and Devlivered order count
     const orderFullfillment = {
-      ProcessingOrders,
-      ShippedOrders,
-      DeliveredOrders,
+      process,
+      shipped,
+      delivered,
     };
 
     // Product Categories name and count
