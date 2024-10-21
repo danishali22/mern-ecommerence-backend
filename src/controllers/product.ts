@@ -98,7 +98,7 @@ export const newProduct = TryCatch(
 
     if (!photo) return next(new ErrorHandler("Please add Product photo", 400));
 
-    if (!name || !category || !price || !stock) {
+    if (!name || !category || !price || stock > 0 || !photo) {
       rm(photo.path, () => {
         console.log("Photo Deleted");
       });
