@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { TryCatch } from "../middlewares/error.js";
-import { NewOrderRequestBody, OrderItemsType } from "../types/types.js";
 import { Order } from "../models/order.js";
+import { NewOrderRequestBody } from "../types/types.js";
 import { cacheData, invalidateCache, reduceStock } from "../utils/features.js";
 import ErrorHandler from "../utils/utitlity-class.js";
 
@@ -67,7 +67,15 @@ export const newOrder = TryCatch(
       total,
     } = req.body;
 
-    if (!shippingInfo || !orderItems || !user || !subtotal || !tax || !total) {
+    if (
+      !shippingInfo ||
+      !Array.isArray(orderItems) ||
+      orderItems.length === 0 ||
+      !user ||
+      !subtotal ||
+      !tax ||
+      !total
+    ) {
       return next(new ErrorHandler("Please enter all fields", 400));
     }
 
