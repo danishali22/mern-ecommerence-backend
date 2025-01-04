@@ -4,6 +4,7 @@ import { errorMiddleware } from './middlewares/error.js';
 import NodeCache from 'node-cache';
 import morgan from 'morgan';
 import { config } from 'dotenv';
+import {v2 as cloudinary} from 'cloudinary';
 
 // Importing user routes
 import userRoutes from './routes/user.js';
@@ -23,6 +24,11 @@ const stripeKey = process.env.STRIPE_KEY || "";
 
 // Connect DB
 connectDB(mongoURI);
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
+});
 
 export const stripe = new Stripe(stripeKey);
 

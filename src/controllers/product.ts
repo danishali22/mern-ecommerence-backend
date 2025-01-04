@@ -94,14 +94,15 @@ export const newProduct = TryCatch(
     next: NextFunction
   ) => {
     const { name, category, price, stock } = req.body;
-    const photo = req.file;
+    const photos = req.files as Express.Multer.File[] | undefined;
 
-    if (!photo) return next(new ErrorHandler("Please add Product photo", 400));
+    if (!photos) return next(new ErrorHandler("Please add Product photo", 400));
 
-    if (!name || !category || !price || stock > 0 || !photo) {
-      rm(photo.path, () => {
-        console.log("Photo Deleted");
-      });
+    if(photos.length > 1) return next(new ErrorHandler("Please add only one photo", 400));
+
+    if(photos.length < 5) return next(new ErrorHandler("You can only upload 5 photos", 400));
+
+    if (!name || !category || !price || stock > 0) {
       return next(new ErrorHandler("Please enter all fields", 400));
     }
     await Product.create({
