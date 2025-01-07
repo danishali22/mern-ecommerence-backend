@@ -10,7 +10,7 @@ import ErrorHandler from "../utils/utitlity-class.js";
 import { rm } from "fs";
 import { faker } from "@faker-js/faker";
 import { myCache } from "../app.js";
-import { cacheData, invalidateCache } from "../utils/features.js";
+import { cacheData, invalidateCache, uploadToCloudinary } from "../utils/features.js";
 
 export const latestProducts = TryCatch(async (req, res, next) => {
   let products;
@@ -94,23 +94,27 @@ export const newProduct = TryCatch(
     next: NextFunction
   ) => {
     const { name, category, price, stock } = req.body;
+    console.log("all", name, category, price, stock);
     const photos = req.files as Express.Multer.File[] | undefined;
 
     if (!photos) return next(new ErrorHandler("Please add Product photo", 400));
 
-    if(photos.length > 1) return next(new ErrorHandler("Please add only one photo", 400));
+    if(photos.length < 1) return next(new ErrorHandler("Please add atleast one photo", 400));
 
-    if(photos.length < 5) return next(new ErrorHandler("You can only upload 5 photos", 400));
+    if(photos.length > 5) return next(new ErrorHandler("You can only upload 5 photos", 400));
 
-    if (!name || !category || !price || stock > 0) {
+    if (!name || !category || !price || !stock) {
       return next(new ErrorHandler("Please enter all fields", 400));
     }
+
+    const photosUrl = await uploadToCloudinary(photos);
+
     await Product.create({
       name,
       price,
       stock,
       category: category.toLowerCase(),
-      photo: photo?.path,
+      photos: photosUrl,
     });
 
     invalidateCache({ product: true, admin: true });
