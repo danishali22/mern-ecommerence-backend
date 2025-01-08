@@ -4,33 +4,41 @@ const schema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "Please enter product name"],
+      required: [true, "Please add product name"],
     },
     photos: [
       {
         public_id: {
           type: String,
-          required: [true, "Please enter public id"],
+          required: [true, "Please add public id"],
         },
         url: {
           type: String,
-          required: [true, "Please enter image url"],
+          required: [true, "Please add image url"],
         },
       },
     ],
     price: {
       type: Number,
-      required: [true, "Please enter product price"],
+      required: [true, "Please add product price"],
     },
     stock: {
       type: Number,
-      required: [true, "Please enter product stock"],
+      required: [true, "Please add product stock"],
     },
     category: {
       type: String,
-      required: [true, "Please enter category name"],
+      required: [true, "Please add category name"],
       trim: true,
     },
+    description: {
+      type: String,
+      required: [true, "Please add description"],
+    },
+    ratings: {
+      type: Number,
+      default: 0,
+    }
   },
   {
     timestamps: true,

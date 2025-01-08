@@ -82,7 +82,7 @@ export const getProduct = TryCatch(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    data: product,
+    product,
     message: "Product found successfully",
   });
 });
@@ -93,8 +93,7 @@ export const newProduct = TryCatch(
     res: Response,
     next: NextFunction
   ) => {
-    const { name, category, price, stock } = req.body;
-    console.log("all", name, category, price, stock);
+    const { name, description, category, price, stock } = req.body;
     const photos = req.files as Express.Multer.File[] | undefined;
 
     if (!photos) return next(new ErrorHandler("Please add Product photo", 400));
@@ -103,7 +102,7 @@ export const newProduct = TryCatch(
 
     if(photos.length > 5) return next(new ErrorHandler("You can only upload 5 photos", 400));
 
-    if (!name || !category || !price || !stock) {
+    if (!name || !description || !category || !price || !stock) {
       return next(new ErrorHandler("Please enter all fields", 400));
     }
 
@@ -111,6 +110,7 @@ export const newProduct = TryCatch(
 
     await Product.create({
       name,
+      description,
       price,
       stock,
       category: category.toLowerCase(),
@@ -128,14 +128,14 @@ export const newProduct = TryCatch(
 
 export const updateProduct = TryCatch(async (req, res, next) => {
   const { id } = req.params;
-  const { name, category, price, stock } = req.body;
-  console.log("body", name, category, price, stock);
+  const { name, description, category, price, stock } = req.body;
+  console.log("body", name, description, category, price, stock);
 
   const photos = req.files as Express.Multer.File[] | undefined;
   const product = await Product.findById(id);
   if (!product) return next(new ErrorHandler("Product Not Found", 400));
 
-  if (photos) {
+  if (photos && photos.length > 0) {
     const photosUrl = await uploadToCloudinary(photos);
     const ids = product.photos.map((photo) => photo.public_id);
     await deleteFromCloudinary(ids);
@@ -143,11 +143,10 @@ export const updateProduct = TryCatch(async (req, res, next) => {
   }
 
   if (name) product.name = name;
+  if (description) product.description = description;
   if (category) product.category = category;
   if (price) product.price = price;
   if (stock) product.stock = stock;
-
-  console.log("stock", stock);
 
   const updatedProduct = await product.save();
   
