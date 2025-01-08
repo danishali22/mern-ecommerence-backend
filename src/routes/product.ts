@@ -20,7 +20,7 @@ app.get("/admin-products", adminOnly, getAdminProducts);
 app.get("/search", searchFilterProducts);
 
 app.get("/:id", getProduct);
-app.put("/:id", adminOnly, updateProduct);
+app.put("/:id", adminOnly, multiUpload, updateProduct);
 app.delete("/:id", adminOnly, deleteProduct);
 
 export default app;

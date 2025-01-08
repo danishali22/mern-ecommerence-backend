@@ -10,7 +10,7 @@ import ErrorHandler from "../utils/utitlity-class.js";
 import { rm } from "fs";
 import { faker } from "@faker-js/faker";
 import { myCache } from "../app.js";
-import { cacheData, invalidateCache, uploadToCloudinary } from "../utils/features.js";
+import { cacheData, deleteFromCloudinary, invalidateCache, uploadToCloudinary } from "../utils/features.js";
 
 export const latestProducts = TryCatch(async (req, res, next) => {
   let products;
@@ -129,15 +129,17 @@ export const newProduct = TryCatch(
 export const updateProduct = TryCatch(async (req, res, next) => {
   const { id } = req.params;
   const { name, category, price, stock } = req.body;
-  const photo = req.file;
+  console.log("body", name, category, price, stock);
+
+  const photos = req.files as Express.Multer.File[] | undefined;
   const product = await Product.findById(id);
   if (!product) return next(new ErrorHandler("Product Not Found", 400));
 
-  if (photo) {
-    rm(product?.photo!, () => {
-      console.log("Old photo deleted");
-    });
-    product.photo = photo.path;
+  if (photos) {
+    const photosUrl = await uploadToCloudinary(photos);
+    const ids = product.photos.map((photo) => photo.public_id);
+    await deleteFromCloudinary(ids);
+    product.photos = photosUrl as any;
   }
 
   if (name) product.name = name;
@@ -145,9 +147,10 @@ export const updateProduct = TryCatch(async (req, res, next) => {
   if (price) product.price = price;
   if (stock) product.stock = stock;
 
+  console.log("stock", stock);
+
   const updatedProduct = await product.save();
   
-
   invalidateCache({
     product: true,
     productId: String(product._id),
@@ -165,9 +168,11 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
   const id = req.params.id;
   const product = await Product.findById(id);
   if (!product) return next(new ErrorHandler("Product Not Found", 400));
-  rm(product.photo, () => {
-    console.log("Product photo deleted");
-  });
+  
+  const ids = product.photos.map((photo) => photo.public_id);
+
+  await deleteFromCloudinary(ids);
+
   await product.deleteOne();
   invalidateCache({
     product: true,
