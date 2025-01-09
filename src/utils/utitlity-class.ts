@@ -6,6 +6,3 @@ class ErrorHandler extends Error {
 }
 
 export default ErrorHandler;
-
-// Product Update not working
-// req body is undefined in update product

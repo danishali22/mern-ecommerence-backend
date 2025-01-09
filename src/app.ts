@@ -10,6 +10,7 @@ import {v2 as cloudinary} from 'cloudinary';
 import userRoutes from './routes/user.js';
 import productRoutes from './routes/product.js';
 import orderRoutes from './routes/order.js';
+import couponRoutes from './routes/coupon.js';
 import paymentRoutes from './routes/payment.js';
 import dashboardRoutes from './routes/dashboard.js';
 import Stripe from 'stripe';
@@ -21,6 +22,7 @@ config({
 const port = process.env.PORT || 4000;
 const mongoURI = process.env.MONGO_URI || "";
 const stripeKey = process.env.STRIPE_KEY || "";
+const clientURL = process.env.CLIENT_URL || "";
 
 // Connect DB
 connectDB(mongoURI);
@@ -38,7 +40,13 @@ const app = express();
 
 app.use(express.json());
 app.use(morgan("dev"));
-app.use(cors());
+app.use(
+  cors({
+    origin: [clientURL],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 
 app.get('/', (req, res) => {
   console.log("Root route accessed");
@@ -48,6 +56,7 @@ app.get('/', (req, res) => {
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/product', productRoutes);
 app.use('/api/v1/order', orderRoutes);
+app.use('/api/v1/coupon', couponRoutes);
 app.use('/api/v1/payment', paymentRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 

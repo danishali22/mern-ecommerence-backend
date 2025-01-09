@@ -129,7 +129,6 @@ export const newProduct = TryCatch(
 export const updateProduct = TryCatch(async (req, res, next) => {
   const { id } = req.params;
   const { name, description, category, price, stock } = req.body;
-  console.log("body", name, description, category, price, stock);
 
   const photos = req.files as Express.Multer.File[] | undefined;
   const product = await Product.findById(id);
