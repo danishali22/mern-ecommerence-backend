@@ -265,7 +265,7 @@ export const newReview = TryCatch(async (req, res, next) => {
 
   product.ratings = ratings;
   product.numOfReviews = numOfReviews;
-
+  await product.save();
 
   await invalidateCache({
     product: true,

@@ -13,7 +13,7 @@ export const findAverageRatings = async (productId: mongoose.Types.ObjectId) => 
     totalRating += review.rating;
   });
 
-  const averageRating = Math.floor(totalRating / reviews.length);
+  const averageRating = Math.floor(totalRating / reviews.length) || 0;
 
   return {
     numOfReviews: reviews.length,
