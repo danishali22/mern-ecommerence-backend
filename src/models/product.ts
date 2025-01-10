@@ -38,7 +38,11 @@ const schema = new mongoose.Schema(
     ratings: {
       type: Number,
       default: 0,
-    }
+    },
+    numOfReviews: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

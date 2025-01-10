@@ -10,7 +10,9 @@ import ErrorHandler from "../utils/utitlity-class.js";
 import { rm } from "fs";
 import { faker } from "@faker-js/faker";
 import { myCache } from "../app.js";
-import { cacheData, deleteFromCloudinary, invalidateCache, uploadToCloudinary } from "../utils/features.js";
+import { cacheData, deleteFromCloudinary, findAverageRatings, invalidateCache, uploadToCloudinary } from "../utils/features.js";
+import { User } from "../models/user.js";
+import { Review } from "../models/review.js";
 
 export const latestProducts = TryCatch(async (req, res, next) => {
   let products;
@@ -98,9 +100,9 @@ export const newProduct = TryCatch(
 
     if (!photos) return next(new ErrorHandler("Please add Product photo", 400));
 
-    if(photos.length < 1) return next(new ErrorHandler("Please add atleast one photo", 400));
+    if (photos.length < 1) return next(new ErrorHandler("Please add atleast one photo", 400));
 
-    if(photos.length > 5) return next(new ErrorHandler("You can only upload 5 photos", 400));
+    if (photos.length > 5) return next(new ErrorHandler("You can only upload 5 photos", 400));
 
     if (!name || !description || !category || !price || !stock) {
       return next(new ErrorHandler("Please enter all fields", 400));
@@ -148,7 +150,7 @@ export const updateProduct = TryCatch(async (req, res, next) => {
   if (stock) product.stock = stock;
 
   const updatedProduct = await product.save();
-  
+
   invalidateCache({
     product: true,
     productId: String(product._id),
@@ -166,7 +168,7 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
   const id = req.params.id;
   const product = await Product.findById(id);
   if (!product) return next(new ErrorHandler("Product Not Found", 400));
-  
+
   const ids = product.photos.map((photo) => photo.public_id);
 
   await deleteFromCloudinary(ids);
@@ -230,6 +232,85 @@ export const searchFilterProducts = TryCatch(
     });
   }
 );
+
+export const newReview = TryCatch(async (req, res, next) => {
+  const user = await User.findById(req.query.id);
+  if (!user) return next(new ErrorHandler("User Not Found", 400));
+
+  const product = await Product.findById(req.params.id);
+  if (!product) return next(new ErrorHandler("Product Not Found", 400));
+
+  const { rating, comment } = req.body;
+
+  const alreadyReviewed = await Review.findOne({
+    userId: user._id,
+    productId: product._id,
+  });
+
+  if (alreadyReviewed) {
+    alreadyReviewed.rating = rating;
+    alreadyReviewed.comment = comment;
+    await alreadyReviewed.save();
+  } 
+  else {
+    await Review.create({
+      rating,
+      comment,
+      userId: user._id,
+      productId: product._id
+    });
+  }
+
+  const {ratings, numOfReviews} = await findAverageRatings(product._id);
+
+  product.ratings = ratings;
+  product.numOfReviews = numOfReviews;
+
+
+  await invalidateCache({
+    product: true,
+    productId: String(product._id),
+    admin: true,
+    // review: true,
+  });
+
+  return res.status(alreadyReviewed ? 200 : 201).json({
+    success: true,
+    message: alreadyReviewed ? "Review updated successfully" : "Review added successfully",
+  });
+});
+
+export const deleteReview = TryCatch(async (req, res, next) => {
+  const review = await Review.findById(req.params.id);
+  if (!review) return next(new ErrorHandler("Review Not Found", 400));
+
+  const user = await User.findById(req.query.id);
+  if (!user) return next(new ErrorHandler("User Not Found", 400));
+
+  const isAuthenticated = review.userId.toString() === user._id.toString();
+  if (!isAuthenticated) return next(new ErrorHandler("Not Authorized", 401));
+
+  await review.deleteOne();
+
+  const product = await Product.findById(review.productId);
+  if (!product) return next(new ErrorHandler("Product Not Found", 400));
+
+  const {ratings, numOfReviews} = await findAverageRatings(review.productId);
+  product.ratings = ratings;
+  product.numOfReviews = numOfReviews;
+  await product.save();
+
+  await invalidateCache({
+    product: true,
+    productId: String(product._id),
+    admin: true,
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Review deleted successfully",
+  });
+});
 
 // const generateRandomProducts = async (count: number = 10) => {
 //   const products = [];

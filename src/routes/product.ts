@@ -1,11 +1,13 @@
 import express from "express";
 import {
   deleteProduct,
+  deleteReview,
   getAdminProducts,
   getAllCategories,
   getProduct,
   latestProducts,
   newProduct,
+  newReview,
   searchFilterProducts,
   updateProduct,
 } from "../controllers/product.js";
@@ -18,6 +20,11 @@ app.get("/latest", latestProducts);
 app.get("/categories", getAllCategories);
 app.get("/admin-products", adminOnly, getAdminProducts);
 app.get("/search", searchFilterProducts);
+
+// review
+app.post("/:id/review/new", newReview);
+app.delete("/review/:id", deleteReview);
+
 
 app.get("/:id", getProduct);
 app.put("/:id", adminOnly, multiUpload, updateProduct);
