@@ -8,7 +8,7 @@ import { Review } from "../models/review.js";
 
 export const findAverageRatings = async (productId: mongoose.Types.ObjectId) => {
   let totalRating = 0;
-  const reviews = await Review.find({ productId });
+  const reviews = await Review.find({ product: productId });
   reviews.forEach((review) => {
     totalRating += review.rating;
   });

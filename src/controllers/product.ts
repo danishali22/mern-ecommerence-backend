@@ -233,6 +233,15 @@ export const searchFilterProducts = TryCatch(
   }
 );
 
+export const allRevewsOfProduct = TryCatch(async (req, res, next) => {
+  const reviews = await Review.find({product: req.params.id}).populate("user", "name");
+
+  return res.status(200).json({
+    success: true,
+    reviews,
+  });
+});
+
 export const newReview = TryCatch(async (req, res, next) => {
   const user = await User.findById(req.query.id);
   if (!user) return next(new ErrorHandler("User Not Found", 400));
@@ -243,8 +252,8 @@ export const newReview = TryCatch(async (req, res, next) => {
   const { rating, comment } = req.body;
 
   const alreadyReviewed = await Review.findOne({
-    userId: user._id,
-    productId: product._id,
+    user: user._id,
+    product: product._id,
   });
 
   if (alreadyReviewed) {
@@ -256,8 +265,8 @@ export const newReview = TryCatch(async (req, res, next) => {
     await Review.create({
       rating,
       comment,
-      userId: user._id,
-      productId: product._id
+      user: user._id,
+      product: product._id
     });
   }
 
@@ -287,15 +296,15 @@ export const deleteReview = TryCatch(async (req, res, next) => {
   const user = await User.findById(req.query.id);
   if (!user) return next(new ErrorHandler("User Not Found", 400));
 
-  const isAuthenticated = review.userId.toString() === user._id.toString();
+  const isAuthenticated = review.user.toString() === user._id.toString();
   if (!isAuthenticated) return next(new ErrorHandler("Not Authorized", 401));
 
   await review.deleteOne();
 
-  const product = await Product.findById(review.productId);
+  const product = await Product.findById(review.product);
   if (!product) return next(new ErrorHandler("Product Not Found", 400));
 
-  const {ratings, numOfReviews} = await findAverageRatings(review.productId);
+  const {ratings, numOfReviews} = await findAverageRatings(review.product);
   product.ratings = ratings;
   product.numOfReviews = numOfReviews;
   await product.save();

@@ -12,12 +12,12 @@ const schema = new mongoose.Schema(
       min: [1, "Rating must be at least 1"],
       max: [5, "Rating must not be more than 5"],
     },
-    userId: {
+    user: {
       type: String,
       ref: "User",
       required: true,
     },
-    productId: {
+    product: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
       required: true,

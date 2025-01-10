@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  allRevewsOfProduct,
   deleteProduct,
   deleteReview,
   getAdminProducts,
@@ -22,6 +23,7 @@ app.get("/admin-products", adminOnly, getAdminProducts);
 app.get("/search", searchFilterProducts);
 
 // review
+app.get("/:id/reviews", allRevewsOfProduct);
 app.post("/:id/review/new", newReview);
 app.delete("/review/:id", deleteReview);
 
