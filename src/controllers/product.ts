@@ -234,7 +234,11 @@ export const searchFilterProducts = TryCatch(
 );
 
 export const allRevewsOfProduct = TryCatch(async (req, res, next) => {
-  const reviews = await Review.find({product: req.params.id}).populate("user", "name");
+  const reviews = await Review.find({
+    product: req.params.id
+  })
+    .populate("user", "name photo")
+    .sort({ updatedAt: -1 });
 
   return res.status(200).json({
     success: true,
@@ -260,7 +264,7 @@ export const newReview = TryCatch(async (req, res, next) => {
     alreadyReviewed.rating = rating;
     alreadyReviewed.comment = comment;
     await alreadyReviewed.save();
-  } 
+  }
   else {
     await Review.create({
       rating,
@@ -270,7 +274,7 @@ export const newReview = TryCatch(async (req, res, next) => {
     });
   }
 
-  const {ratings, numOfReviews} = await findAverageRatings(product._id);
+  const { ratings, numOfReviews } = await findAverageRatings(product._id);
 
   product.ratings = ratings;
   product.numOfReviews = numOfReviews;
@@ -304,7 +308,7 @@ export const deleteReview = TryCatch(async (req, res, next) => {
   const product = await Product.findById(review.product);
   if (!product) return next(new ErrorHandler("Product Not Found", 400));
 
-  const {ratings, numOfReviews} = await findAverageRatings(review.product);
+  const { ratings, numOfReviews } = await findAverageRatings(review.product);
   product.ratings = ratings;
   product.numOfReviews = numOfReviews;
   await product.save();
