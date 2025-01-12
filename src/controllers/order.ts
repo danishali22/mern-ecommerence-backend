@@ -2,16 +2,20 @@ import { NextFunction, Request, Response } from "express";
 import { TryCatch } from "../middlewares/error.js";
 import { Order } from "../models/order.js";
 import { NewOrderRequestBody } from "../types/types.js";
-import { cacheData, invalidateCache, reduceStock } from "../utils/features.js";
+import { invalidateCache, reduceStock } from "../utils/features.js";
 import ErrorHandler from "../utils/utitlity-class.js";
+import { redis, redisTTL } from "../app.js";
 
 export const myOrders = TryCatch(async (req, res, next) => {
   const user = req.query.user;
   const key = `my-orders-${user}`;
-
-  const orders = await cacheData(key, async () => {
-    return await Order.find({ user });
-  });
+  let orders;
+  orders = await redis.get(key);
+  if(orders) orders = JSON.parse(orders);
+  else {
+    orders =  await Order.find({ user });
+    await redis.setex(key, redisTTL, JSON.stringify(orders));
+  }
   return res.status(200).json({
     success: true,
     data: orders,
@@ -21,10 +25,13 @@ export const myOrders = TryCatch(async (req, res, next) => {
 
 export const allOrders = TryCatch(async (req, res, next) => {
   const key = "all-orders";
-
-  const orders = await cacheData(key, async () => {
-    return await Order.find().populate("user", "name");
-  });
+  let orders;
+  orders = await redis.get(key);
+  if (orders) orders = JSON.parse(orders);
+  else {
+    orders = await Order.find().populate("user", "name");
+    await redis.setex(key, redisTTL, JSON.stringify(orders));
+  }
   return res.status(200).json({
     success: true,
     data: orders,
@@ -35,14 +42,13 @@ export const allOrders = TryCatch(async (req, res, next) => {
 export const getOrder = TryCatch(async (req, res, next) => {
   const id = req.params.id;
   const key = `order-${id}`;
-
-  const order = await cacheData(key, async () => {
-    const foundOrder = await Order.findById(id);
-    if (!foundOrder) {
-      return next(new ErrorHandler("Order Not Found", 400));
-    }
-    return foundOrder;
-  });
+  let order;
+  order = await redis.get(key);
+  if (order) order = JSON.parse(order);
+  else {
+    order = await Order.findById(id);
+    await redis.setex(key, redisTTL, JSON.stringify(order));
+  }
   return res.status(200).json({
     success: true,
     data: order,
@@ -92,7 +98,7 @@ export const newOrder = TryCatch(
 
     await reduceStock(orderItems);
 
-    invalidateCache({
+    await invalidateCache({
       product: true,
       order: true,
       admin: true,
@@ -126,7 +132,7 @@ export const processOrder = TryCatch(async (req, res, next) => {
 
   await order.save();
 
-  invalidateCache({
+  await invalidateCache({
     product: false,
     order: true,
     admin: true,
@@ -149,7 +155,7 @@ export const deleteOrder = TryCatch(async (req, res, next) => {
 
   await order.deleteOne();
 
-  invalidateCache({
+  await invalidateCache({
     product: false,
     order: true,
     admin: true,
