@@ -21,7 +21,6 @@ export const createPaymentIntent = TryCatch (
         });
     }
 )
-// sk_test_51PGbVmFJHdjwKuJhElYCRjNzLCeltmRMgoYjhk7oYtAUUNu4xV5hdDBrOyfP2eDxI7vCBiGc4SQdR2gI616r5neG001bkOXJ0m
 
 export const applyDiscount = TryCatch (
     async(req, res, next) => {
